@@ -1,10 +1,10 @@
 package com.ravening.omdbApplication.exceptions;
 
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,9 +16,7 @@ import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler {
@@ -68,14 +66,14 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
         body.put("timestamp", LocalDate.now());
         body.put("status", status.value());
 
-        List<String> errors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .collect(Collectors.toList());
+        Map<String, String> errors = new LinkedHashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
 
         body.put("errors", errors);
-
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 

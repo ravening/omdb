@@ -24,6 +24,20 @@ public class RatingServiceImpl implements RatingService {
 
     private final OMDBClient omdbClient;
 
+    /**
+     * Function to add rating to a movie provided that the movie exists either in
+     * local db or in OMDB.
+     *
+     * If the movie already exists in local db then it just updates the rating for it
+     * else it will fetch the movie details from OMDB and then calculates the rating
+     *
+     * The logic to calculate rating is implemented in {@link RatingServiceImpl.calculateRating}
+     *
+     * @param title
+     * @param rating
+     * @param apiKey
+     * @return movie with rating updated
+     */
     @Override
     @Transactional
     public MovieDto addRatingToMovie(String title, double rating, String apiKey) {
@@ -48,9 +62,11 @@ public class RatingServiceImpl implements RatingService {
 
         try {
             lock.lock();
+            // calculate the rating for it inside the lock so that its thread safe
             calculateRating(movie, rating);
 
             log.info("New rating for movie {} is {}", movie.getNominee(), movie.getRatings());
+            // update the data in cache
             this.movieCacheService.addMovie(movie);
         } finally {
             lock.unlock();
@@ -59,7 +75,23 @@ public class RatingServiceImpl implements RatingService {
         return this.movieService.saveMovie(movie);
     }
 
-
+    /**
+     * Function to calculate the rating for the movie. Ratings for movie is calculated as
+     *
+     * ratings = (total ratings / total number of votes)
+     *
+     * total ratings = ratings * total votes
+     *
+     * So when a user wants to add rating, we calculate
+     *
+     * total ratings = total ratings + current user rating
+     * total votes = total votes + 1
+     *
+     * new rating = total ratings / total votes
+     *
+     * @param movie
+     * @param rating
+     */
     private void calculateRating(Movie movie, double rating) {
         log.info("Calculating the new rating for the movie {}", movie.getNominee());
         double currentRating = movie.getRatings();

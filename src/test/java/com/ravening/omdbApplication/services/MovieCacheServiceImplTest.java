@@ -43,9 +43,17 @@ class MovieCacheServiceImplTest {
         Movie movie = MovieUtil.getMovie("scream");
         movie.setWon(true);
 
+        Movie omdbMovie = MovieUtil.getMovie("scream");
+        omdbMovie.setVotes(12345);
+        omdbMovie.setRatings(5.5);
+        omdbMovie.setBoxOfficeValue(12345678.90);
+
         Mockito.when(movieRepository
                         .findMovieByCategoryAndNomineeEqualsIgnoreCase(anyString(), anyString()))
                 .thenReturn(Optional.of(movie));
+
+        Mockito.when(omdbClient.getMovie(anyString(), anyString()))
+                .thenReturn(omdbMovie);
 
         Optional<Movie> optionalMovie = movieCacheService.getMovie("scream", "abcdef");
 

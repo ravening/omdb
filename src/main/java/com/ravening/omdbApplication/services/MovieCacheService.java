@@ -10,10 +10,9 @@ public interface MovieCacheService {
 
     Optional<Movie> getMovie(String title, String apiKey);
 
-//    Optional<MovieDto> getMovie(String title);
-//    List<Movie> getMovies();
-
     List<MovieDto> getMovies();
 
     Movie addMovie(Movie movie);
+
+    void emptyMoviesCache();
 }

@@ -22,19 +22,19 @@ import static java.util.Optional.ofNullable;
 public class OMDBClient {
 
     @Value("${omdb.url}")
-    private String omdbUrl;
+    String omdbUrl;
 
     private final RestTemplate restTemplate;
 
-
+    /**
+     * Function to retrieve movie data from OMDB based on the movie title
+     * @param title
+     * @param omdbApiKey
+     * @return parsed movie info
+     */
     public OMDBDto retrieveOmdbData(String title, String omdbApiKey) {
         log.info(MessageFormat.format("Fetching movie data for title {0}", title));
         URI uri = createUri(title, omdbApiKey);
-//        return Optional.ofNullable(
-//                restTemplate.exchange(uri, HttpMethod.GET, null, OMDBDto.class)
-//                        .getBody()
-//        );
-
 
         try {
             return restTemplate.getForObject(uri, OMDBDto.class);
@@ -52,11 +52,28 @@ public class OMDBClient {
                 .build().toUri();
     }
 
+    /**
+     * Check if the data returned from OMDB api has valid movie info
+     * @param omdbDto
+     * @param title
+     *
+     * @throws MovieNotFoundException
+     */
     public void checkIfMovieExistsInOmdb(OMDBDto omdbDto, String title) {
         ofNullable(omdbDto)
                 .flatMap(omdb -> ofNullable(omdb.getTitle()))
                 .orElseThrow(() -> new MovieNotFoundException(title));
     }
+
+    /**
+     * Convenient function to retrieve data from OMDB and parse it to
+     * {@link Movie} class by parsing the values properly else
+     * @throws MovieNotFoundException
+     *
+     * @param title
+     * @param omdbApiKey
+     * @return Movie
+     */
     public Movie getMovie(String title, String omdbApiKey) {
         OMDBDto omdbDto = retrieveOmdbData(title, omdbApiKey);
         checkIfMovieExistsInOmdb(omdbDto, title);
@@ -67,7 +84,7 @@ public class OMDBClient {
                 .won(false)
                 .category("Best Picture")
                 .description(omdbDto.getDescription())
-                .ratings((Double.parseDouble(omdbDto.getImdbRating())))
+                .ratings(omdbDto.getRatingAsNumber())
                 .boxOfficeValue(omdbDto.getBoxOfficeValueAsNumber())
                 .votes(omdbDto.getVotesAsNumber()).build();
     }

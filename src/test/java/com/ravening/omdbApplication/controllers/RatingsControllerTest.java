@@ -104,7 +104,7 @@ class RatingsControllerTest {
     }
 
     @Test
-    @DisplayName("Should throw exception when apikey is missing")
+    @DisplayName("Should rate movie properly")
     public void shouldRateMove_whenValidDataIsPassed() throws Exception {
         RatingDto ratingDto = RatingDto.builder()
                 .title("Chicago")

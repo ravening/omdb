@@ -37,12 +37,29 @@ public class MovieServiceImpl implements MovieService {
                 .stream().map(movieMapper::toDto).toList();
     }
 
+    /**
+     * Function to save Movie object in db and also it evicts the entry
+     * from cache so that users will get latest data from db rather than
+     * stale data from cache
+     *
+     * @param movie
+     * @return
+     */
     @Override
     @CacheEvict(value = "movies", key = "#p0.nominee")
     public MovieDto saveMovie(Movie movie) {
         return movieMapper.toDto(this.movieRepository.save(movie));
     }
 
+    /**
+     * Returns top K rated movies first ordered by rating and then
+     * ordered by box office value. By default, it returns top 10 movies
+     * in descending order
+     *
+     * @param count default 10
+     * @param order default descending
+     * @return list of movies according to order specified
+     */
     @Override
     public List<MovieDto> getTopKMovies(int count, String order) {
         Page<Movie> moviePage =
@@ -52,6 +69,17 @@ public class MovieServiceImpl implements MovieService {
     }
 
 
+    /**
+     * Creates paging and sorting request for fetching movies.
+     * By default the fetches 10 movies in descending order of ratings
+     * and in case of ties then descending of box office value.
+     *
+     * Users can also specify "asc" for ascending order
+     *
+     * @param count default 10
+     * @param order default desc
+     * @return
+     */
     private PageRequest createPageRequest(int count, String order) {
         PageRequest pageRequest;
 

@@ -8,6 +8,17 @@ import java.lang.reflect.Method;
 
 @Slf4j
 public class CustomMovieKeyGenerator implements KeyGenerator {
+    /**
+     * By default, keys are case sensitive in spring. So add
+     * a custom key generator which makes the key case insensitive
+     * so that when we search for either "Titanic" or "titanic" or
+     * "TITANIC", it exists in the cache
+     *
+     * @param target
+     * @param method
+     * @param params
+     * @return
+     */
     @Override
     public Object generate(Object target, Method method, Object... params) {
         String key;

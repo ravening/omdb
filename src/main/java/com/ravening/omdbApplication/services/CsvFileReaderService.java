@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static com.ravening.omdbApplication.utils.Constants.BEST_PICTURE;
 
@@ -42,20 +41,28 @@ public class CsvFileReaderService implements FileReaderService {
     String omdbApiKey;
 
     private final MovieRepository movieRepository;
-    private final MovieCacheServiceImpl movieCacheService;
-
     private final OMDBClient omdbClient;
 
+    /**
+     * Function to read from csv file, create {@link Movie} object out of it
+     * and persist in db.
+     *
+     * If OMDB apikey is provided in {@link application.properties#omdb.api.key} then it will
+     * also fetch movie related info from OMDb and persists in db else it will skip
+     * fetching data from OMDB.
+     *
+     * @throws IOException
+     */
     @Override
     @EventListener(ApplicationReadyEvent.class)
     public void readFile() throws IOException {
 
         InputStream inputStream = this.getClass()
                 .getClassLoader()
-                .getResourceAsStream("academy_awards.csv");
+                .getResourceAsStream(csvFileName);
 
         if (inputStream == null) {
-            throw new FileNotFoundException("");
+            throw new FileNotFoundException(String.format("Unable to find %s under resources folder", csvFileName));
         }
 
         CSVParser parser = new CSVParserBuilder()
@@ -71,9 +78,6 @@ public class CsvFileReaderService implements FileReaderService {
 
             String[] line;
 
-            Set<String> movieNames = Set.of("Slumdog Millionaire", "No Country for Old Men",
-                    "The Departed", "Crash", "Million Dollar Baby", "The Lord of the Rings: The Return of the King",
-                    "Chicago", "A Beautiful Mind", "Gladiator", "American Beauty", "Shakespeare in Love", "Titanic");
             while ((line = reader.readNext()) != null) {
                 if (BEST_PICTURE.equalsIgnoreCase(line[1])) {
                     Movie movie = Movie.builder()
@@ -83,8 +87,8 @@ public class CsvFileReaderService implements FileReaderService {
                             .description(line[3])
                             .won("YES".equalsIgnoreCase(line[4])).build();
 
-                    if (omdbApiKey != null && !StringUtils.trimAllWhitespace(omdbApiKey).equalsIgnoreCase("") &&
-                            movieNames.contains(movie.getNominee())) {
+                    // if apikey is already provided in application.properties then fetch missing details from OMDB
+                    if (omdbApiKey != null && !StringUtils.trimAllWhitespace(omdbApiKey).equalsIgnoreCase("")) {
                         OMDBDto omdbDto =
                                 this.omdbClient.retrieveOmdbData(movie.getNominee(), omdbApiKey);
                         this.omdbClient.checkIfMovieExistsInOmdb(omdbDto, movie.getNominee());
@@ -99,16 +103,8 @@ public class CsvFileReaderService implements FileReaderService {
 
         this.movieRepository.saveAll(movies);
 
-
-        addMovieToCache(movies);
 //        List<Movie> movieList = parseCsvFileToMovieBeans(csvFileName, Movie.class);
-//        this.movieRepository.saveAll(movieList);
 
-    }
-
-    private void addMovieToCache(List<Movie> movies) {
-        movies.parallelStream()
-                .forEach(this.movieCacheService::addMovie);
     }
 
     public static <T> List<T> parseCsvFileToMovieBeans(final String filename,

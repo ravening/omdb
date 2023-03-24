@@ -49,7 +49,7 @@ public class MovieController {
             @RequestParam(value = "count", required = false, defaultValue = "10") int count,
             @RequestParam(value = "order", required = false, defaultValue = "desc") String order
     ) {
-        log.info("Fetching top rated movies");
+        log.info("Fetching top {} rated movies in {} order", count, order);
         return ResponseEntity.ok()
                 .body(this.movieService.getTopKMovies(count, order));
     }

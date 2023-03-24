@@ -33,10 +33,4 @@ public class RatingsController {
                 .title(movie.getNominee())
                 .rating(movie.getRatings()).build());
     }
-
-    @GetMapping("/rating")
-    public ResponseEntity<String> getHello() {
-        return ResponseEntity.ok("hello world");
-    }
-
 }
