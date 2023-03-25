@@ -13,3 +13,5 @@ CREATE TABLE movie (
        votes numeric,
        boxofficevalue numeric
 );
+
+create index best_picture_category_is_win_idx on movie(nominee,category,won);

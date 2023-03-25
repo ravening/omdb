@@ -38,6 +38,6 @@ public class OMDBDto {
     }
 
     public double getRatingAsNumber() {
-        return NumberUtils.toDouble(imdbVotes.replaceAll("N/A", ""), 0.0);
+        return NumberUtils.toDouble(imdbRating, 0.0);
     }
 }

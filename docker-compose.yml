@@ -1,21 +1,21 @@
 version: '3.8'
 services:
-  app5:
+  app:
     image: 'docker-spring-boot-postgres:latest'
     build:
       context: .
-    container_name: app5
+    container_name: app
     ports:
       - "8080:8080"
     depends_on:
-      - db3
+      - db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db3:5432/movies
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/movies
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION=true
-  db3:
-    container_name: db3
+  db:
+    container_name: db
     image: postgres
     environment:
       - POSTGRES_USER=postgres

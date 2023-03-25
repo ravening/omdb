@@ -7,6 +7,11 @@ import com.ravening.omdbApplication.models.Movie;
 import com.ravening.omdbApplication.models.dtos.MovieDto;
 import com.ravening.omdbApplication.services.MovieCacheService;
 import com.ravening.omdbApplication.services.MovieService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/api")
@@ -31,6 +38,12 @@ public class MovieController {
 
     private final MovieCacheService movieCacheService;
 
+    @Operation(summary = "Get movie based on title with Best Picture won or not")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Movie retrieved",
+                    content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Movie.class))})
+    })
     @GetMapping("/bestmovie")
     public ResponseEntity<MovieDto> didMovieWin(@Valid @RequestParam("title") String title,
                                                 @RequestParam("apikey") String apikey) {
@@ -44,6 +57,12 @@ public class MovieController {
 
     }
 
+    @Operation(summary = "Get top rated movies with sorting based on ratings and box office value")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Top rated Movies retrieved",
+                    content = {@Content(mediaType = APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = Movie.class))})
+    })
     @GetMapping("/topmovies")
     public ResponseEntity<List<MovieDto>> getTopMovies(
             @RequestParam(value = "count", required = false, defaultValue = "10") int count,

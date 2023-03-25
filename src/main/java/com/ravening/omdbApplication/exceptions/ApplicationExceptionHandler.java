@@ -9,7 +9,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.io.FileNotFoundException;
@@ -18,7 +20,9 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@ControllerAdvice
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+
+@RestControllerAdvice
 public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(MovieNotFoundException.class)
@@ -55,6 +59,18 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
         body.put("message", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Handles all Method ArgumentType Mismatch Exception and converts in error.
+     *
+     * @param exception catches all Method ArgumentType Mismatch Exception and converts to error
+     * @return error with code and description
+     */
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<Object> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException exception) {
+        String message = exception.getName() + " should be of type " + exception.getRequiredType().getName();
+        return new ResponseEntity<>(message, BAD_REQUEST);
     }
 
     @Override
